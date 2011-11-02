@@ -1,0 +1,13 @@
+Thumbs.db
+mileage-build-simulator-*
+mileage/Makefile
+mileage/build-stamp
+mileage/configure-stamp
+mileage/debian/*
+mileage/mileage
+mileage/mileage.pro.user
+mileage/mileage_*_armel.changes
+mileage/mileage_*_armel.deb
+mileage/moc/*
+mileage/obj/*
+mileage/ui/*
