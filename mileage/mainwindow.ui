@@ -100,12 +100,18 @@
      <string>Main</string>
     </property>
     <addaction name="action_About"/>
+    <addaction name="actionClear_History"/>
    </widget>
    <addaction name="menu_About"/>
   </widget>
   <action name="action_About">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="actionClear_History">
+   <property name="text">
+    <string>Clear History</string>
    </property>
   </action>
  </widget>

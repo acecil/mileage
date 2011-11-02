@@ -1,18 +1,18 @@
 /*
-    This file is part of "mileage".
+    This file is part of Mileage.
 
-    "mileage" is free software: you can redistribute it and/or modify
+    Mileage is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Foobar is distributed in the hope that it will be useful,
+    Mileage is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+    along with Mileage.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mainwindow.h"
@@ -21,9 +21,13 @@
 #include <QtCore/QCoreApplication>
 #include <QDateTime>
 #include <QDir>
+#include <QMessageBox>
+
+#define CONFIG_DIR  (".mileage")
+#define CONFIG_FILE ("mileage.conf")
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), config(QDir::homePath() + "/.mileage/" + QString("mileage.conf")), stream(&config)
+    : QMainWindow(parent), ui(new Ui::MainWindow), config(QDir::homePath() + "/" + CONFIG_DIR + "/" + CONFIG_FILE), stream(&config)
 {
     ui->setupUi(this);
 
@@ -32,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     {
         /* Failed to open, create the directory and try again. */
         QDir home(QDir::homePath());
-        home.mkdir(".mileage");
+        home.mkdir(CONFIG_DIR);
 
         if(!config.open(QIODevice::QIODevice::ReadWrite | QIODevice::Text))
         {
@@ -111,7 +115,15 @@ void MainWindow::showExpanded()
 
 void MainWindow::on_action_About_triggered()
 {
-
+    /* Create and show about dialog. */
+    QMessageBox::about(this, tr("About Mileage"),
+    tr("<center><h1>Mileage 0.0.1</h1>"\
+    "<p>The current version of Mileage can be found at:<p>"\
+    "<p><a href=\"https://github.com/acecil/mileage/\">https://github.com/acecil/mileage/</a></p>"\
+    "<p>&copy; 2011 Andrew Gascoyne-Cecil<p>"\
+    "<p>&lt;gascoyne@gmail.com&gt;</p>"\
+    "<p>This program is free software - "\
+    "License: <a href=\"http://www.gnu.org/licenses/gpl-3.0.html\">GNU GPL 3</a> or later.</p></center>"));
 }
 
 void MainWindow::on_addButton_clicked()
@@ -152,4 +164,23 @@ QString MainWindow::fileToGuiItem(QString& fileItem)
     guiStream << pencePerMile << " ppm";
 
     return guiItem;
+}
+
+void MainWindow::on_actionClear_History_triggered()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Are you sure you want to clear the history?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::No);
+    if( msgBox.exec() == QMessageBox::Yes )
+    {
+        QDir d(QDir::homePath() + "/" + CONFIG_DIR);
+
+        /* Rename config file to backup name. */
+        if(d.rename(CONFIG_FILE, QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz") + "-mileage.config"))
+        {
+            /* Clear list. */
+            ui->mileageList->clear();
+        }
+    }
 }

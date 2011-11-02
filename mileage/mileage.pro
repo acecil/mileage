@@ -38,3 +38,11 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/compat \
     qtc_packaging/debian_fremantle/changelog
 
+
+
+
+
+
+
+
+
