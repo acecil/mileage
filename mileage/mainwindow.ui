@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Mileage</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../logo.png</normaloff>../logo.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="autoFillBackground">

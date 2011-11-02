@@ -20,21 +20,32 @@
 
 #include <QtCore/QCoreApplication>
 #include <QDateTime>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), config(QString("mileage.conf")), stream(&config)
+    : QMainWindow(parent), ui(new Ui::MainWindow), config(QDir::homePath() + "/.mileage/" + QString("mileage.conf")), stream(&config)
 {
     ui->setupUi(this);
 
     /* Open config file (and create if required). */
-    config.open(QIODevice::ReadWrite);
+    if(!config.open(QIODevice::ReadWrite | QIODevice::Text))
+    {
+        /* Failed to open, create the directory and try again. */
+        QDir home(QDir::homePath());
+        home.mkdir(".mileage");
+
+        if(!config.open(QIODevice::QIODevice::ReadWrite | QIODevice::Text))
+        {
+            return;
+        }
+    }
 
     /* Read each line of the file and add items to the list view. */
     QString line;
     while((line = stream.readLine()), !line.isNull() )
     {
         /* Add the line to the list. */
-        ui->mileageList->insertItem(0, line);
+        ui->mileageList->insertItem(0, fileToGuiItem(line));
     }
 
 }
@@ -105,26 +116,40 @@ void MainWindow::on_action_About_triggered()
 
 void MainWindow::on_addButton_clicked()
 {
-    /* Get values from edit lines. */
-    double miles = ui->milesEdit->text().toDouble();
-    double litres = ui->litresEdit->text().toDouble();
-    double cost = ui->costEdit->text().toDouble();
+    QString fileItem;
+    QTextStream itemStream(&fileItem);
+
+    itemStream << QDate::currentDate().toString("yyyy-MM-dd") << " ";
+    itemStream << ui->milesEdit->text() << " ";
+    itemStream << ui->costEdit->text() << " ";
+    itemStream << ui->litresEdit->text();
+
+    /* Add to GUI. */
+    ui->mileageList->insertItem(0, fileToGuiItem(fileItem));
+
+    /* Add to file. */
+    stream << fileItem << "\n";
+}
+
+QString MainWindow::fileToGuiItem(QString& fileItem)
+{
+    QString guiItem;
+    QTextStream guiStream(&guiItem);
+    QTextStream itemStream(&fileItem);
+
+    /* Get values from file item. */
+    QString date;
+    double miles, litres, cost;
+    itemStream >> date >> miles >> litres >> cost;
 
     /* Calculate mpg. */
     double mpg = miles / (0.219969157 * litres);
-    QString mpgString;
-    mpgString.setNum(mpg, 'g', 5);
 
     /* Calculate pence per mile. */
     double pencePerMile = cost * 100 / miles;
-    QString pencePerMileString;
-    pencePerMileString.setNum(pencePerMile, 'g', 4);
 
-    QString item = QDate::currentDate().toString("yyyy-MM-dd") + ": " + mpgString + " mpg  " + pencePerMileString + " pence per mile";
+    guiStream << date << ": " << mpg << " mpg ";
+    guiStream << pencePerMile << " ppm";
 
-    /* Add to GUI. */
-    ui->mileageList->insertItem(0, item);
-
-    /* Add to file. */
-    stream << item << "\n";
+    return guiItem;
 }

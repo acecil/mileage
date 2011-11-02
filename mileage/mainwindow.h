@@ -53,6 +53,8 @@ private:
     Ui::MainWindow *ui;
     QFile config;
     QTextStream stream;
+
+    QString fileToGuiItem(QString& fileItem);
 };
 
 #endif // MAINWINDOW_H
