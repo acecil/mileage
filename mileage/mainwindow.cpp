@@ -133,8 +133,8 @@ void MainWindow::on_addButton_clicked()
 
     itemStream << QDate::currentDate().toString("yyyy-MM-dd") << " ";
     itemStream << ui->milesEdit->text() << " ";
-    itemStream << ui->costEdit->text() << " ";
-    itemStream << ui->litresEdit->text();
+    itemStream << ui->litresEdit->text() << " ";
+    itemStream << ui->costEdit->text();
 
     /* Add to GUI. */
     ui->mileageList->insertItem(0, fileToGuiItem(fileItem));
