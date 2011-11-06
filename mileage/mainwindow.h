@@ -60,6 +60,8 @@ private:
     QTextStream stream;
 
     QString fileToGuiItem(QString& fileItem);
+    bool extractItemsFromFileLine(QString& line, QDateTime& dateTime, 
+                                  double& miles, double& litres, double& cost)
 };
 
 #endif // MAINWINDOW_H
