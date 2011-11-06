@@ -48,6 +48,8 @@ private slots:
     void on_action_About_triggered();
 
     void on_addButton_clicked();
+    
+    void on_combineButton_clicked();
 
     void on_actionClear_History_triggered();
 
