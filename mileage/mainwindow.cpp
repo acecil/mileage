@@ -148,6 +148,53 @@ void MainWindow::on_action_About_triggered()
     "License: <a href=\"http://www.gnu.org/licenses/gpl-3.0.html\">GNU GPL 3</a> or later.</p></center>"));
 }
 
+void MainWindow::on_combineButton_clicked()
+{
+    /* Combine values in GUI with last entry. */
+    QDateTime date;
+    double miles, litres, cost;
+    if( !extractItemsFromFileLine(lastFileItem, date, miles, litres, cost) )
+    {
+        /* Failed to extract items from line. */
+        QMessageBox::warning(this, tr("Parse error"),
+            tr("Failed to extract data from last line."));
+            return;
+    }
+    
+    date = QDate::currentDate().toString(DATE_FORMAT_FOR_FILE);
+    miles += ui->milesEdit->text().toDouble();
+    litres += ui->litresEdit->text().toDouble();
+    cost += ui->costEdit->text().toDouble();
+    
+    /* Form new file item. */
+    QString fileItem;
+    QTextStream itemStream(&fileItem);
+    itemStream << date << " " << miles << " " << litres << " " << cost;
+    
+    /* Replace first item in GUI list. */
+    QString guiItem = fileToGuiItem(fileItem);
+    if( guiItem.isNull() )
+    {
+        /* Failed to convert file item to gui item. */
+        return;
+    }
+    ui->mileageList->item(0)->setText(guiItem);
+    
+    /* Remove last line from config file (including line ending). */
+    config.resize(config.size() - lastFileItem.size() - 1);
+    
+    /* Add new file item to end of file. */
+    stream << fileItem << "\n";
+    
+    /* Save new last file item. */
+    lastFileItem = fileItem;
+    
+    /* Clear the entry boxes. */
+    ui->milesEdit->clear();
+    ui->litresEdit->clear();
+    ui->costEdit->clear();
+}
+
 void MainWindow::on_addButton_clicked()
 {
     QString fileItem;
@@ -169,6 +216,9 @@ void MainWindow::on_addButton_clicked()
 
     /* Add to file. */
     stream << fileItem << "\n";
+    
+    /* Save last file item. */
+    lastFileItem = fileItem;
     
     /* Clear the entry boxes. */
     ui->milesEdit->clear();
