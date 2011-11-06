@@ -28,7 +28,7 @@
 #define DATE_FORMAT_FOR_FILE_1    ("yyyy-MM-dd")
 #define DATE_FORMAT_FOR_FILE_2    ("yyyy-MM-dd-hh-mm-ss")
 #define DATE_FORMAT_FOR_FILE      (DATE_FORMAT_FOR_FILE_2)
-#define DATE_FORMAT_FOR_DISPLAY ("yyyy-MM-dd")
+#define DATE_FORMAT_FOR_DISPLAY   ("yyyy-MM-dd")
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), 
