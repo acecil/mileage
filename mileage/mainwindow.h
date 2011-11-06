@@ -56,6 +56,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QFile config;
+    QString lastFileItem;
     QTextStream stream;
 
     QString fileToGuiItem(QString& fileItem);
