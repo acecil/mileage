@@ -25,9 +25,16 @@
 
 #define CONFIG_DIR  (".mileage")
 #define CONFIG_FILE ("mileage.conf")
+#define DATE_FORMAT_FOR_FILE_1    ("yyyy-MM-dd")
+#define DATE_FORMAT_FOR_FILE_2    ("yyyy-MM-dd-hh-mm-ss")
+#define DATE_FORMAT_FOR_FILE      (DATE_FORMAT_FOR_FILE_2)
+#define DATE_FORMAT_FOR_DISPLAY ("yyyy-MM-dd")
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), config(QDir::homePath() + "/" + CONFIG_DIR + "/" + CONFIG_FILE), stream(&config)
+    : QMainWindow(parent), 
+    ui(new Ui::MainWindow), 
+    config(QDir::homePath() + "/" + CONFIG_DIR + "/" + CONFIG_FILE), 
+    stream(&config)
 {
     ui->setupUi(this);
 
@@ -40,6 +47,8 @@ MainWindow::MainWindow(QWidget *parent)
 
         if(!config.open(QIODevice::QIODevice::ReadWrite | QIODevice::Text))
         {
+            QMessageBox::critical(this, tr("Critical Error"),
+                tr("Failed to open or create configuration file."));
             return;
         }
     }
@@ -48,8 +57,16 @@ MainWindow::MainWindow(QWidget *parent)
     QString line;
     while((line = stream.readLine()), !line.isNull() )
     {
+        /* Convert the file string to a gui string. */
+        QString guiItem = fileToGuiItem(line);
+        if( guiItem.isNull() )
+        {
+            /* Failed to parse the line. */
+            continue;
+        }
+        
         /* Add the line to the list. */
-        ui->mileageList->insertItem(0, fileToGuiItem(line));
+        ui->mileageList->insertItem(0, guiItem);
     }
 
 }
@@ -131,16 +148,27 @@ void MainWindow::on_addButton_clicked()
     QString fileItem;
     QTextStream itemStream(&fileItem);
 
-    itemStream << QDate::currentDate().toString("yyyy-MM-dd") << " ";
+    itemStream << QDate::currentDate().toString(DATE_FORMAT_FOR_FILE) << " ";
     itemStream << ui->milesEdit->text() << " ";
     itemStream << ui->litresEdit->text() << " ";
     itemStream << ui->costEdit->text();
 
     /* Add to GUI. */
-    ui->mileageList->insertItem(0, fileToGuiItem(fileItem));
+    QString guiItem = fileToGuiItem(fileItem);
+    if( guiItem.isNull() )
+    {
+        /* Failed to convert file item to gui item. */
+        return;
+    }
+    ui->mileageList->insertItem(0, guiItem);
 
     /* Add to file. */
     stream << fileItem << "\n";
+    
+    /* Clear the entry boxes. */
+    ui->milesEdit->clear();
+    ui->litresEdit->clear();
+    ui->costEdit->clear();
 }
 
 QString MainWindow::fileToGuiItem(QString& fileItem)
@@ -150,9 +178,27 @@ QString MainWindow::fileToGuiItem(QString& fileItem)
     QTextStream itemStream(&fileItem);
 
     /* Get values from file item. */
-    QString date;
+    QString dateString;
     double miles, litres, cost;
-    itemStream >> date >> miles >> litres >> cost;
+    itemStream >> dateString >> miles >> litres >> cost;
+
+    /* Convert date string to date format trying the various formats we have used in the past. */
+    QDateTime dateTime = QDateTime::fromString(dateString, DATE_FORMAT_FOR_FILE_2);
+    if( !dateTime.isValid() )
+    {
+        /* Failed using date format 2, use date format 1. */
+        dateTime = QDateTime::fromString(dateString, DATE_FORMAT_FOR_FILE_1);
+        if( !dateTime.isValid() )
+        {
+            /* Still failed - give an error and skip this line by returning a null QString. */
+            QMessageBox::warning(this, tr("Parse error"),
+                tr("Failed to parse date."));
+            return QString();
+        }
+    }
+    
+    /* Convert date to date string for GUI. */
+    QString guiDateString = dateTime.toString(DATE_FORMAT_FOR_DISPLAY);
 
     /* Calculate mpg. */
     double mpg = miles / (0.219969157 * litres);
@@ -160,7 +206,7 @@ QString MainWindow::fileToGuiItem(QString& fileItem)
     /* Calculate pence per mile. */
     double pencePerMile = cost * 100 / miles;
 
-    guiStream << date << ": " << mpg << " mpg ";
+    guiStream << guiDateString << ": " << mpg << " mpg ";
     guiStream << pencePerMile << " ppm";
 
     return guiItem;
