@@ -55,8 +55,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     /* Read each line of the file and add items to the list view. */
     QString line;
-    while((line = stream.readLine()), !line.isNull() )
+    while( !stream.atEnd() )
     {
+        line = stream.readLine();
+        
         /* Convert the file string to a gui string. */
         QString guiItem = fileToGuiItem(line);
         if( guiItem.isNull() )
@@ -67,6 +69,9 @@ MainWindow::MainWindow(QWidget *parent)
         
         /* Add the line to the list. */
         ui->mileageList->insertItem(0, guiItem);
+        
+        /* Save last file item. */
+        lastFileItem = line;
     }
 
 }
@@ -171,47 +176,6 @@ void MainWindow::on_addButton_clicked()
     ui->costEdit->clear();
 }
 
-QString MainWindow::fileToGuiItem(QString& fileItem)
-{
-    QString guiItem;
-    QTextStream guiStream(&guiItem);
-    QTextStream itemStream(&fileItem);
-
-    /* Get values from file item. */
-    QString dateString;
-    double miles, litres, cost;
-    itemStream >> dateString >> miles >> litres >> cost;
-
-    /* Convert date string to date format trying the various formats we have used in the past. */
-    QDateTime dateTime = QDateTime::fromString(dateString, DATE_FORMAT_FOR_FILE_2);
-    if( !dateTime.isValid() )
-    {
-        /* Failed using date format 2, use date format 1. */
-        dateTime = QDateTime::fromString(dateString, DATE_FORMAT_FOR_FILE_1);
-        if( !dateTime.isValid() )
-        {
-            /* Still failed - give an error and skip this line by returning a null QString. */
-            QMessageBox::warning(this, tr("Parse error"),
-                tr("Failed to parse date."));
-            return QString();
-        }
-    }
-    
-    /* Convert date to date string for GUI. */
-    QString guiDateString = dateTime.toString(DATE_FORMAT_FOR_DISPLAY);
-
-    /* Calculate mpg. */
-    double mpg = miles / (0.219969157 * litres);
-
-    /* Calculate pence per mile. */
-    double pencePerMile = cost * 100 / miles;
-
-    guiStream << guiDateString << ": " << mpg << " mpg ";
-    guiStream << pencePerMile << " ppm";
-
-    return guiItem;
-}
-
 void MainWindow::on_actionClear_History_triggered()
 {
     QMessageBox msgBox;
@@ -229,4 +193,59 @@ void MainWindow::on_actionClear_History_triggered()
             ui->mileageList->clear();
         }
     }
+}
+
+QString MainWindow::fileToGuiItem(QString& fileItem)
+{
+    QString guiItem;
+    QTextStream guiStream(&guiItem);
+
+    QDateTime dateTime;
+    double miles, litres, cost;
+    if( !extractItemsFromFileLine(fileItem, dateTime, miles, litres, cost) )
+    {
+        /* Failed to extract items from line. */
+        return QString();
+    }
+    
+    /* Convert date to date string for GUI. */
+    QString guiDateString = dateTime.toString(DATE_FORMAT_FOR_DISPLAY);
+
+    /* Calculate mpg. */
+    double mpg = miles / (0.219969157 * litres);
+
+    /* Calculate pence per mile. */
+    double pencePerMile = cost * 100 / miles;
+
+    guiStream << guiDateString << ": " << mpg << " mpg ";
+    guiStream << pencePerMile << " ppm";
+
+    return guiItem;
+}
+
+bool MainWindow::extractItemsFromFileLine(QString& line, QDateTime& dateTime, 
+                                  double& miles, double& litres, double& cost)
+{
+    QTextStream itemStream(&line);
+    QString dateString;
+    
+    /* Get values from item. */
+    itemStream >> dateString >> miles >> litres >> cost;
+
+    /* Convert date string to date format trying the various formats we have used in the past. */
+    dateTime = QDateTime::fromString(dateString, DATE_FORMAT_FOR_FILE_2);
+    if( !dateTime.isValid() )
+    {
+        /* Failed using date format 2, use date format 1. */
+        dateTime = QDateTime::fromString(dateString, DATE_FORMAT_FOR_FILE_1);
+        if( !dateTime.isValid() )
+        {
+            /* Still failed - give an error and skip this line by returning a null QString. */
+            QMessageBox::warning(this, tr("Parse error"),
+                tr("Failed to parse date."));
+            return false;
+        }
+    }
+    
+    return true;
 }
