@@ -150,6 +150,12 @@ void MainWindow::on_action_About_triggered()
 
 void MainWindow::on_combineButton_clicked()
 {
+    if( lastFileItem.isNull() )
+    {
+        /* Nothing to combine with. */
+        return;
+    }
+    
     /* Combine values in GUI with last entry. */
     QDateTime date;
     double miles, litres, cost;
