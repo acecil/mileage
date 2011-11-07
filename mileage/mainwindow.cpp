@@ -167,7 +167,8 @@ void MainWindow::on_combineButton_clicked()
             return;
     }
     
-    date = QDate::currentDate().toString(DATE_FORMAT_FOR_FILE);
+    QString dateString;
+    dateString = QDateTime::currentDateTime().toString(DATE_FORMAT_FOR_FILE);
     miles += ui->milesEdit->text().toDouble();
     litres += ui->litresEdit->text().toDouble();
     cost += ui->costEdit->text().toDouble();
@@ -175,7 +176,7 @@ void MainWindow::on_combineButton_clicked()
     /* Form new file item. */
     QString fileItem;
     QTextStream itemStream(&fileItem);
-    itemStream << date << " " << miles << " " << litres << " " << cost;
+    itemStream << dateString << " " << miles << " " << litres << " " << cost;
     
     /* Replace first item in GUI list. */
     QString guiItem = fileToGuiItem(fileItem);
@@ -206,7 +207,7 @@ void MainWindow::on_addButton_clicked()
     QString fileItem;
     QTextStream itemStream(&fileItem);
 
-    itemStream << QDate::currentDate().toString(DATE_FORMAT_FOR_FILE) << " ";
+    itemStream << QDateTime::currentDateTime().toString(DATE_FORMAT_FOR_FILE) << " ";
     itemStream << ui->milesEdit->text() << " ";
     itemStream << ui->litresEdit->text() << " ";
     itemStream << ui->costEdit->text();

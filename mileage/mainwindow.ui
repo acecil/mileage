@@ -21,7 +21,7 @@
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
-   <layout class="QVBoxLayout" name="mainVBox">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -73,14 +73,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHboxLayout" name="btnVBox">
-        <item>
-         <widget class="QPushButton" name="addButton">
-          <property name="text">
-           <string>Add</string>
-          </property>
-         </widget>
-        </item>
+       <layout class="QHBoxLayout" name="btnLayout">
         <item>
          <widget class="QPushButton" name="combineButton">
           <property name="text">
@@ -88,7 +81,15 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="addButton">
+          <property name="text">
+           <string>Add</string>
+          </property>
+         </widget>
+        </item>
        </layout>
+      </item>
       <item>
        <widget class="QListWidget" name="mileageList"/>
       </item>
